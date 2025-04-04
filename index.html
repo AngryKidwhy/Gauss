@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+        }
+        #head {
+            background-color:aquamarine;
+            width: 100%;
+            height: 70px;
+            line-height: 70px;
+            text-align: center;
+
+            font-weight: bold;
+            font-size: 1.4em; 
+
+            border: 3px solid silver;
+            
+            margin-bottom: 10px;
+        }
+
+        #Nnumb {
+            margin-left: 10px;
+        }
+        .text1 {
+            font-size: xx-large;
+            font-weight: 600;
+        }
+
+        .typeN {
+            width: 70px;
+            height: 40px;
+
+            font-size: xx-large;
+            text-align: center;
+        }
+
+        .buttonclass {
+            background-color: rgb(37, 194, 37);
+        }
+
+        .divs {
+            display: block;
+            margin-left: 50px;
+            text-align: center;
+            width: calc(100% - 50px);
+        }
+
+        .td-class {
+            border: 5px solid silver;
+            text-align: center;
+            padding: 8px;
+
+            font-size: xx-large;
+            font-weight: 600;
+        }
+
+        .table-class {
+            border: 1px solid black;
+            margin: 0 auto 50px;
+            text-align: center;
+            border-collapse: collapse;
+        }
+    </style>
+</head>
+
+
+<body>
+    <div id="head">Gauss</div>
+
+    <label for="n_number" id="Nnumb" class="text1">Введите число переменных:</label>
+    <input id="n_number" class="typeN" type="number" min="1" value="3">
+
+    <button onclick="startFunc()" class="text1 buttonclass" id="start">Составить уравнение</button>    
+    
+    <div style="margin-bottom: 20px;"></div>
+
+    <div id="eq" class="divs"></div> 
+
+    <script>
+        function startFunc() {
+            document.getElementById("eq").innerHTML = '';
+
+            let n = +document.getElementById("n_number").value;
+            
+            let stack = document.getElementById("eq");
+            
+            for (let i = 0; i < n; i++) {
+                let row = document.createElement("div");
+                row.style.marginBottom = "10px";
+                for (let j = 0; j < n; j++) {
+                    let idA = `Ai${i}j${j}`;
+
+                    let Aij = document.createElement("input");
+                    Aij.type="number";
+                    Aij.className="typeN";
+                    Aij.value="0";
+                    Aij.id=idA;
+                    Aij.style.marginRight = "10px";
+                    
+                    let x1 = document.createElement("label");
+                    x1.innerHTML=`x<sub>${j + 1}</sub>`;
+                    if (j == n - 1) {
+                        x1.innerHTML += "  =  ";
+                    } else {
+                        x1.innerHTML += "  +  ";
+                    }
+                    x1.className="text1";
+                    x1.style.marginRight = "10px";
+
+                    row.appendChild(Aij);
+                    row.appendChild(x1);
+                }
+                
+                let Ci = document.createElement("input");
+                Ci.type="number";
+                Ci.className="typeN";
+                Ci.value="0";
+                Ci.id=`Ci${i}`;
+                row.appendChild(Ci);
+
+                stack.appendChild(row);
+            }
+            
+            let bt = document.createElement("button");
+            bt.className = "text1 buttonclass";
+            bt.textContent = "Решить систему";
+            bt.addEventListener("click", solveSystem);
+
+            stack.appendChild(bt);
+        }
+    </script>
+
+    <div style="margin-bottom: 20px;"></div>
+
+    <div id="solve" class="divs"></div>
+
+    <script>
+        function PrintMatrix(A) {
+            let container = document.getElementById("solve");
+
+            let table = document.createElement("table");
+            table.className = "table-class";
+            let n = A.length;
+            for (let i = 0; i < n; i++) {
+                let tr = document.createElement("tr");
+                for (let j = 0; j <= n; j++) {
+                    let td = document.createElement("td");
+                    td.textContent = A[i][j].toFixed(3);
+                    td.className = "td-class";
+
+                    tr.appendChild(td);
+                }
+                table.appendChild(tr);
+            }
+            container.appendChild(table);
+        }
+
+        function solveSystem() {
+            document.getElementById("solve").innerHTML = '';
+
+            let n = +document.getElementById("n_number").value;
+            
+            console.log(n);
+            let A = [];
+            for (let i = 0; i < n; i++) {
+                let row = [];
+                for (let j = 0; j < n; j++) {
+                    let Aid = `Ai${i}j${j}`;
+                    let val = +document.getElementById(Aid).value;
+                    row.push(val);
+                }
+                let Cid = `Ci${i}`;
+                let val = +document.getElementById(Cid).value;
+                row.push(val);
+                A.push(row);
+            }
+            let EPS = 1e-6;
+            PrintMatrix(A);
+            for (let it = 0; it < n; it++) {
+                let mx = 0, idx = -1;
+                for (let i = it; i < n; i++) {
+                    if (Math.abs(A[i][it]) > mx) {
+                        mx = Math.abs(A[i][it]);
+                        idx = i;
+                    }
+                }
+                if (mx < EPS || idx == -1) {
+                    for (let i = 0; i < n; i++) 
+                        for (let j = 0; j <= n; j++)
+                            A[i][j] = 0;
+                        PrintMatrix(A);
+                        break;
+                    }
+                [A[it], A[idx]] = [A[idx], A[it]];
+                let del = A[it][it];
+                for (let j = 0; j <= n; j++) 
+                    A[it][j] /= del; 
+                for (let i = 0; i < n; i++) if (i != it) {
+                    let mult = A[i][it] / A[it][it];
+                    for (let j = 0; j <= n; j++) {
+                        A[i][j] -= A[it][j] * mult;
+                    }
+                }
+                PrintMatrix(A);
+            }
+        };
+    </script>
+
+
+
+</body>
+</html>
