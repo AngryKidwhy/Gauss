@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <script src="https://cdn.jsdelivr.net/npm/fraction.js@4.2.0/fraction.min.js"></script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
@@ -67,9 +68,14 @@
             text-align: center;
             border-collapse: collapse;
         }
-
         #eq {
             white-space: nowrap;
+        }
+
+
+        .td-class {
+            font-family: "Times New Roman", serif;
+            padding: 10px;
         }
     </style>
 </head>
@@ -152,12 +158,19 @@
             let table = document.createElement("table");
             table.className = "table-class";
             let n = A.length;
+
             for (let i = 0; i < n; i++) {
                 let tr = document.createElement("tr");
                 for (let j = 0; j <= n; j++) {
                     let td = document.createElement("td");
-                    td.textContent = A[i][j].toFixed(3);
+                    
+                    let f = new Fraction(A[i][j]);
+                    td.textContent = f.toFraction();
                     td.className = "td-class";
+                    
+                    if (j == n) {
+                        td.style.paddingLeft = "100px";
+                    }
 
                     tr.appendChild(td);
                 }
@@ -167,54 +180,63 @@
         }
 
         function solveSystem() {
-            document.getElementById("solve").innerHTML = '';
-
-            let n = +document.getElementById("n_number").value;
+            const solveDiv = document.getElementById("solve");
+            solveDiv.innerHTML = '';
             
-            console.log(n);
-            let A = [];
+            const n = +document.getElementById("n_number").value;
+
+            const A = [];
             for (let i = 0; i < n; i++) {
-                let row = [];
+                const row = [];
                 for (let j = 0; j < n; j++) {
-                    let Aid = `Ai${i}j${j}`;
-                    let val = +document.getElementById(Aid).value;
-                    row.push(val);
+                    const val = +document.getElementById(`Ai${i}j${j}`).value;
+                    row.push(new Fraction(val));
                 }
-                let Cid = `Ci${i}`;
-                let val = +document.getElementById(Cid).value;
-                row.push(val);
+                const val = +document.getElementById(`Ci${i}`).value;
+                row.push(new Fraction(val));
                 A.push(row);
             }
-            let EPS = 1e-6;
-            PrintMatrix(A);
+
+            const EPS = 1e-6;
+            let solutionExists = true;
+
             for (let it = 0; it < n; it++) {
-                let mx = 0, idx = -1;
-                for (let i = it; i < n; i++) {
-                    if (Math.abs(A[i][it]) > mx) {
-                        mx = Math.abs(A[i][it]);
-                        idx = i;
+                PrintMatrix(A);
+                let maxRow = it;
+                for (let i = it + 1; i < n; i++) {
+                    if (A[i][it].abs() > A[maxRow][it].abs()) {
+                        maxRow = i;
                     }
                 }
-                if (mx < EPS || idx == -1) {
-                    for (let i = 0; i < n; i++) 
-                        for (let j = 0; j <= n; j++)
-                            A[i][j] = 0;
-                        PrintMatrix(A);
-                        break;
-                    }
-                [A[it], A[idx]] = [A[idx], A[it]];
-                let del = A[it][it];
-                for (let j = 0; j <= n; j++) 
-                    A[it][j] /= del; 
-                for (let i = 0; i < n; i++) if (i != it) {
-                    let mult = A[i][it] / A[it][it];
-                    for (let j = 0; j <= n; j++) {
-                        A[i][j] -= A[it][j] * mult;
+
+                if (A[maxRow][it].abs().valueOf() < EPS) {
+                    solutionExists = false;
+                    break;
+                }
+
+                [A[it], A[maxRow]] = [A[maxRow], A[it]];
+
+                const pivot = A[it][it];
+                for (let j = it; j <= n; j++) {
+                    A[it][j] = A[it][j].div(pivot);
+                }
+
+                for (let i = 0; i < n; i++) {
+                    if (i !== it) {
+                        const factor = A[i][it];
+                        for (let j = it; j <= n; j++) {
+                            A[i][j] = A[i][j].sub(A[it][j].mul(factor));
+                        }
                     }
                 }
+            }
+
+            if (!solutionExists) {
+                // solveDiv.innerHTML = '<div class="error">Система не имеет единственного решения!</div>';
+            } else {
                 PrintMatrix(A);
             }
-        };
+        }
     </script>
 
 
