@@ -92,7 +92,6 @@
     <div style="margin-bottom: 20px;"></div>
 
     <div id="eq" class="divs"></div> 
-
     <script>
         function startFunc() {
             document.getElementById("eq").innerHTML = '';
@@ -108,7 +107,8 @@
                     let idA = `Ai${i}j${j}`;
 
                     let Aij = document.createElement("input");
-                    Aij.type="number";
+
+                    Aij.type="text";
                     Aij.className="typeN";
                     Aij.value="0";
                     Aij.id=idA;
@@ -129,7 +129,7 @@
                 }
                 
                 let Ci = document.createElement("input");
-                Ci.type="number";
+                Ci.type="text";
                 Ci.className="typeN";
                 Ci.value="0";
                 Ci.id=`Ci${i}`;
@@ -189,10 +189,10 @@
             for (let i = 0; i < n; i++) {
                 const row = [];
                 for (let j = 0; j < n; j++) {
-                    const val = +document.getElementById(`Ai${i}j${j}`).value;
+                    const val = document.getElementById(`Ai${i}j${j}`).value;
                     row.push(new Fraction(val));
                 }
-                const val = +document.getElementById(`Ci${i}`).value;
+                const val = document.getElementById(`Ci${i}`).value;
                 row.push(new Fraction(val));
                 A.push(row);
             }
